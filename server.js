@@ -1,5 +1,5 @@
 const express = require('express');
-const mongoose = require('mongoose');
+const { MongoClient } = require('mongodb');
 const cors = require('cors');
 require('dotenv').config();
 
@@ -10,25 +10,43 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-// MongoDB connection
-mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log('Connected to MongoDB'))
-  .catch(err => console.error('MongoDB connection error:', err));
+// Connect with native MongoDB driver and attach db to app.locals
+async function start() {
+  const uri = process.env.MONGODB_URI;
+  if (!uri) {
+    console.error('MONGODB_URI is not set. Exiting.');
+    process.exit(1);
+  }
 
-// Routes
-app.use('/contacts', require('./routes/contacts'));
+  try {
+    const client = new MongoClient(uri, { useUnifiedTopology: true });
+    await client.connect();
+    const dbName = (new URL(uri.replace('mongodb+srv://', 'http://'))).pathname.replace('/', '') || 'contacts';
+    const db = client.db(dbName || 'contacts');
+    app.locals.db = db;
+    console.log('Connected to MongoDB (native driver)');
 
-// Root endpoint
-app.get('/', (req, res) => {
-  res.json({
-    message: 'CSE 341 Contacts API',
-    version: '1.0.0'
-  });
-});
+    // Routes (mounted after db is available)
+    app.use('/contacts', require('./routes/contacts'));
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+    // Root endpoint
+    app.get('/', (req, res) => {
+      res.json({
+        message: 'CSE 341 Contacts API',
+        version: '1.0.0'
+      });
+    });
+
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+
+  } catch (err) {
+    console.error('MongoDB connection error:', err);
+    process.exit(1);
+  }
+}
+
+start();
 
 module.exports = app;

@@ -1,20 +1,20 @@
-const mongoose = require('mongoose');
+const { MongoClient } = require('mongodb');
 require('dotenv').config();
 
-const contactSchema = new mongoose.Schema({
-  firstName: { type: String, required: true },
-  lastName: { type: String, required: true },
-  email: { type: String, required: true },
-  favoriteColor: { type: String, required: true },
-  birthday: { type: Date, required: true }
-});
-
-const Contact = mongoose.model('Contact', contactSchema);
-
 async function addSampleData() {
+  const uri = process.env.MONGODB_URI;
+  if (!uri) {
+    console.error('MONGODB_URI not set in environment.');
+    process.exit(1);
+  }
+
+  const client = new MongoClient(uri, { useUnifiedTopology: true });
   try {
-    await mongoose.connect(process.env.MONGODB_URI);
+    await client.connect();
     console.log('Connected to MongoDB');
+
+    const dbName = (new URL(uri.replace('mongodb+srv://', 'http://'))).pathname.replace('/', '') || 'contacts';
+    const db = client.db(dbName || 'contacts');
 
     const sampleContacts = [
       {
@@ -40,16 +40,16 @@ async function addSampleData() {
       }
     ];
 
-    await Contact.insertMany(sampleContacts);
+    await db.collection('contacts').insertMany(sampleContacts);
     console.log('Sample data inserted successfully');
 
-    const count = await Contact.countDocuments();
+    const count = await db.collection('contacts').countDocuments();
     console.log(`Total contacts in database: ${count}`);
 
   } catch (error) {
     console.error('Error:', error);
   } finally {
-    await mongoose.connection.close();
+    await client.close();
   }
 }
 
