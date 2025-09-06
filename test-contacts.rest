@@ -1,7 +1,7 @@
 // Test the Contacts API
 
 ### Get all contacts
-GET http://localhost:8080/contacts
+GET http://localhost:3000/contacts
 
 ### Get contact by ID (replace with actual ID)
-GET http://localhost:8080/contacts/507f1f77bcf86cd799439011
+GET http://localhost:3000/contacts/507f1f77bcf86cd799439011
