@@ -3,21 +3,6 @@ const { ObjectId } = require('mongodb');
 const router = express.Router();
 
 // Get all contacts
-/*
-  #swagger.summary = 'Get all contacts'
-  #swagger.description = 'Retrieve all contacts from the database'
-  #swagger.responses[200] = {
-    description: 'List of all contacts',
-    schema: [{
-      _id: '507f1f77bcf86cd799439011',
-      firstName: 'John',
-      lastName: 'Doe',
-      email: 'john.doe@example.com',
-      favoriteColor: 'Blue',
-      birthday: '1990-01-01'
-    }]
-  }
-*/
 router.get('/', async (req, res) => {
   try {
     const db = req.app.locals.db;
@@ -29,30 +14,6 @@ router.get('/', async (req, res) => {
 });
 
 // Get contact by ID
-/*
-  #swagger.summary = 'Get contact by ID'
-  #swagger.description = 'Retrieve a specific contact by its ID'
-  #swagger.parameters['id'] = {
-    in: 'path',
-    description: 'Contact ID',
-    required: true,
-    type: 'string'
-  }
-  #swagger.responses[200] = {
-    description: 'Contact found',
-    schema: {
-      _id: '507f1f77bcf86cd799439011',
-      firstName: 'John',
-      lastName: 'Doe',
-      email: 'john.doe@example.com',
-      favoriteColor: 'Blue',
-      birthday: '1990-01-01'
-    }
-  }
-  #swagger.responses[404] = {
-    description: 'Contact not found'
-  }
-*/
 router.get('/:id', async (req, res) => {
   try {
     const db = req.app.locals.db;
@@ -67,31 +28,6 @@ router.get('/:id', async (req, res) => {
 });
 
 // Create new contact
-/*
-  #swagger.summary = 'Create a new contact'
-  #swagger.description = 'Add a new contact to the database'
-  #swagger.parameters['body'] = {
-    in: 'body',
-    description: 'Contact data',
-    required: true,
-    schema: {
-      firstName: 'John',
-      lastName: 'Doe',
-      email: 'john.doe@example.com',
-      favoriteColor: 'Blue',
-      birthday: '1990-01-01'
-    }
-  }
-  #swagger.responses[201] = {
-    description: 'Contact created successfully',
-    schema: {
-      id: '507f1f77bcf86cd799439011'
-    }
-  }
-  #swagger.responses[400] = {
-    description: 'Missing required fields'
-  }
-*/
 router.post('/', async (req, res) => {
   try {
     const db = req.app.locals.db;
@@ -117,34 +53,6 @@ router.post('/', async (req, res) => {
 });
 
 // Update contact
-/*
-  #swagger.summary = 'Update contact by ID'
-  #swagger.description = 'Update an existing contact by its ID'
-  #swagger.parameters['id'] = {
-    in: 'path',
-    description: 'Contact ID',
-    required: true,
-    type: 'string'
-  }
-  #swagger.parameters['body'] = {
-    in: 'body',
-    description: 'Updated contact data',
-    required: true,
-    schema: {
-      firstName: 'Jane',
-      lastName: 'Doe',
-      email: 'jane.doe@example.com',
-      favoriteColor: 'Red',
-      birthday: '1992-02-02'
-    }
-  }
-  #swagger.responses[200] = {
-    description: 'Contact updated successfully'
-  }
-  #swagger.responses[404] = {
-    description: 'Contact not found'
-  }
-*/
 router.put('/:id', async (req, res) => {
   try {
     const db = req.app.locals.db;
@@ -170,22 +78,6 @@ router.put('/:id', async (req, res) => {
 });
 
 // Delete contact
-/*
-  #swagger.summary = 'Delete contact by ID'
-  #swagger.description = 'Delete a contact from the database by its ID'
-  #swagger.parameters['id'] = {
-    in: 'path',
-    description: 'Contact ID',
-    required: true,
-    type: 'string'
-  }
-  #swagger.responses[200] = {
-    description: 'Contact deleted successfully'
-  }
-  #swagger.responses[404] = {
-    description: 'Contact not found'
-  }
-*/
 router.delete('/:id', async (req, res) => {
   try {
     const db = req.app.locals.db;
