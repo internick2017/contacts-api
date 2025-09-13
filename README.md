@@ -1,4 +1,55 @@
-# CSE 341 — Contacts API (Week 1)
+# Contacts API - Week 2
+
+My contacts API for CSE 341. This is the complete version with all CRUD operations.
+
+## What it does
+
+Manages contacts in a MongoDB database. Each contact has:
+- firstName
+- lastName  
+- email
+- favoriteColor
+- birthday
+
+## API Routes
+
+- GET /contacts - gets all contacts
+- GET /contacts/:id - gets one contact
+- POST /contacts - creates new contact
+- PUT /contacts/:id - updates contact
+- DELETE /contacts/:id - deletes contact
+- GET /api-docs - swagger documentation
+
+## Setup
+
+1. Install stuff:
+```bash
+npm install
+```
+
+2. Make a .env file with:
+```
+MONGODB_URI=your_connection_string
+PORT=3000
+```
+
+3. Start it:
+```bash
+npm start
+```
+
+4. Check swagger docs at http://localhost:3000/api-docs
+
+## Testing
+
+Use the test-contacts.rest file to test everything.
+
+## Adding sample data
+
+Run this to add some test contacts:
+```bash
+node add-sample-data.js
+```
 
 This is a small REST API for the Week 1 contacts assignment. It provides two read endpoints backed by MongoDB:
 - GET /contacts — return all contacts

@@ -1,16 +1,18 @@
 const express = require('express');
 const { MongoClient } = require('mongodb');
 const cors = require('cors');
+const swaggerUi = require('swagger-ui-express');
+const swaggerDocument = require('./swagger-output.json');
 require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
+// Basic middleware
 app.use(cors());
 app.use(express.json());
 
-// Connect with native MongoDB driver and attach db to app.locals
+// Connect to MongoDB and start server
 async function start() {
   const uri = process.env.MONGODB_URI;
   if (!uri) {
@@ -26,10 +28,13 @@ async function start() {
     app.locals.db = db;
     console.log('Connected to MongoDB (native driver)');
 
-    // Routes (mounted after db is available)
+    // Swagger docs
+    app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
+    // My routes
     app.use('/contacts', require('./routes/contacts'));
 
-    // Root endpoint
+    // Main route
     app.get('/', (req, res) => {
       res.json({
         message: 'CSE 341 Contacts API',
