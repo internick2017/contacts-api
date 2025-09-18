@@ -32,3 +32,50 @@ Content-Type: application/json
 
 ### Delete contact
 DELETE http://localhost:3000/contacts/{{contactId}}
+
+### Invalid ID format
+GET http://localhost:3000/contacts/invalid-id
+
+### Create invalid (fails schema validation)
+POST http://localhost:3000/contacts
+Content-Type: application/json
+
+{
+  "firstName": "A",
+  "lastName": "B",
+  "email": "not-an-email",
+  "favoriteColor": "",
+  "birthday": "3020-01-01"
+}
+
+### Create valid (for duplicate test)
+POST http://localhost:3000/contacts
+Content-Type: application/json
+
+{
+  "firstName": "Ada",
+  "lastName": "Lovelace",
+  "email": "ada@example.com",
+  "favoriteColor": "blue",
+  "birthday": "1815-12-10"
+}
+
+### Duplicate email should 409
+POST http://localhost:3000/contacts
+Content-Type: application/json
+
+{
+  "firstName": "Another",
+  "lastName": "Person",
+  "email": "ada@example.com",
+  "favoriteColor": "green",
+  "birthday": "1990-01-01"
+}
+
+### Patch with invalid data
+PATCH http://localhost:3000/contacts/{{contactId}}
+Content-Type: application/json
+
+{
+  "email": "not-an-email"
+}

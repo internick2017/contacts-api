@@ -1,98 +1,106 @@
 const express = require('express');
-const { ObjectId } = require('mongodb');
+const mongoose = require('mongoose');
+const Contact = require('../models/Contact');
 const router = express.Router();
 
+function isValidObjectId(id) {
+  return mongoose.Types.ObjectId.isValid(id);
+}
+
 // Get all contacts
-router.get('/', async (req, res) => {
+router.get('/', async (req, res, next) => {
   try {
-    const db = req.app.locals.db;
-    const contacts = await db.collection('contacts').find().toArray();
+    const contacts = await Contact.find().lean();
     res.json(contacts);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    next(error);
   }
 });
 
 // Get contact by ID
-router.get('/:id', async (req, res) => {
+router.get('/:id', async (req, res, next) => {
   try {
-    const db = req.app.locals.db;
     const id = req.params.id;
-    if (!ObjectId.isValid(id)) return res.status(400).json({ message: 'Invalid id' });
-    const contact = await db.collection('contacts').findOne({ _id: new ObjectId(id) });
+    if (!isValidObjectId(id)) return res.status(400).json({ message: 'Invalid id' });
+    const contact = await Contact.findById(id).lean();
     if (!contact) return res.status(404).json({ message: 'Contact not found' });
     res.json(contact);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    next(error);
   }
 });
 
 // Create new contact
-router.post('/', async (req, res) => {
+router.post('/', async (req, res, next) => {
   try {
-    const db = req.app.locals.db;
     const { firstName, lastName, email, favoriteColor, birthday } = req.body;
-
-    // Check if all fields are provided
-    if (!firstName || !lastName || !email || !favoriteColor || !birthday) {
-      return res.status(400).json({ message: 'All fields are required' });
-    }
-
-    const result = await db.collection('contacts').insertOne({
-      firstName,
-      lastName,
-      email,
-      favoriteColor,
-      birthday
-    });
-
-    res.status(201).json({ id: result.insertedId });
+    const contact = new Contact({ firstName, lastName, email, favoriteColor, birthday });
+    await contact.save();
+    res.status(201).json({ id: contact._id });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    if (error.code === 11000) {
+      // duplicate key
+      return res.status(409).json({ message: 'Email already exists' });
+    }
+    next(error);
   }
 });
 
-// Update contact
-router.put('/:id', async (req, res) => {
+// Update contact (replace fields)
+router.put('/:id', async (req, res, next) => {
   try {
-    const db = req.app.locals.db;
     const id = req.params.id;
-    if (!ObjectId.isValid(id)) return res.status(400).json({ message: 'Invalid id' });
+    if (!isValidObjectId(id)) return res.status(400).json({ message: 'Invalid id' });
 
     const { firstName, lastName, email, favoriteColor, birthday } = req.body;
-    const updateFields = { firstName, lastName, email, favoriteColor, birthday };
+    const update = { firstName, lastName, email, favoriteColor, birthday };
 
-    const result = await db.collection('contacts').updateOne(
-      { _id: new ObjectId(id) },
-      { $set: updateFields }
-    );
+    const updated = await Contact.findByIdAndUpdate(id, update, {
+      new: true,
+      runValidators: true,
+      overwrite: false
+    });
 
-    if (result.matchedCount === 0) {
-      return res.status(404).json({ message: 'Contact not found' });
-    }
-
+    if (!updated) return res.status(404).json({ message: 'Contact not found' });
     res.status(200).json({ message: 'Contact updated successfully' });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    if (error.code === 11000) {
+      return res.status(409).json({ message: 'Email already exists' });
+    }
+    next(error);
+  }
+});
+
+// Partial update
+router.patch('/:id', async (req, res, next) => {
+  try {
+    const id = req.params.id;
+    if (!isValidObjectId(id)) return res.status(400).json({ message: 'Invalid id' });
+
+    const updated = await Contact.findByIdAndUpdate(id, req.body, {
+      new: true,
+      runValidators: true
+    });
+    if (!updated) return res.status(404).json({ message: 'Contact not found' });
+    res.status(200).json({ message: 'Contact updated successfully' });
+  } catch (error) {
+    if (error.code === 11000) {
+      return res.status(409).json({ message: 'Email already exists' });
+    }
+    next(error);
   }
 });
 
 // Delete contact
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', async (req, res, next) => {
   try {
-    const db = req.app.locals.db;
     const id = req.params.id;
-    if (!ObjectId.isValid(id)) return res.status(400).json({ message: 'Invalid id' });
-
-    const result = await db.collection('contacts').deleteOne({ _id: new ObjectId(id) });
-
-    if (result.deletedCount === 0) {
-      return res.status(404).json({ message: 'Contact not found' });
-    }
-
+    if (!isValidObjectId(id)) return res.status(400).json({ message: 'Invalid id' });
+    const result = await Contact.findByIdAndDelete(id);
+    if (!result) return res.status(404).json({ message: 'Contact not found' });
     res.status(200).json({ message: 'Contact deleted successfully' });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    next(error);
   }
 });
 
